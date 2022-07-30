@@ -7,6 +7,9 @@ class Token:
         self.value = value
         self.line = line
 
+    def __repr__(self) -> str:
+        return f"({self.type}: {self.value})"
+
 class Tokenizer:
     def __init__(self) -> None:
         self.tokens = []
