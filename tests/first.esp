@@ -1,7 +1,8 @@
- # Intended output:
- ""    >>> ../espresso first.esp
+""" 
+Intended output:
+     >>> ../espresso first.esp
     Hello world
- """
+"""
 
 if __coffee__ == "__espresso__":
     print("Hello world");
