@@ -1,6 +1,6 @@
 """ 
 Intended output:
-     >>> ../espresso first.esp
+    >>> ../espresso first.esp
     Hello world
 """
 
