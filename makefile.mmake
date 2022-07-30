@@ -1,0 +1,6 @@
+#!/usr/bin/env python
+all:
+	pyinstaller --distpath . main.spec
+	mv main presto
+	
+	rm -r ./main.app ./build
