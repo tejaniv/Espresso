@@ -1,4 +1,4 @@
 git:
 	git add .
 	git commit -m "$t" -m "$s"
-	git push -u origin $b 
+	git push -u origin main 
