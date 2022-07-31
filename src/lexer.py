@@ -10,10 +10,11 @@ class Token:
     def __repr__(self) -> str:
         return f"({self.type}: {self.value})"
 
-class Tokenizer:
-    def __init__(self) -> None:
+class Lexer:
+    def __init__(self, data) -> None:
+        self.data = data
         self.tokens = []
-        
+
     
     def tokenize(self, file):
         self.file = open(file, "r")
