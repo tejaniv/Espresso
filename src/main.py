@@ -5,7 +5,7 @@ from parser import *
 
 def process_terminal(line):
     print(line)
-    lexer.tokenize_terminal(line)
+    lexer.tokenize(line)
     # Create tokens
     # Run them through parser
     # Evaluate
@@ -18,7 +18,7 @@ def process_file(file):
 
 def run_terminal():
     print("Welcome to the Espresso Terminal! \nEnter .q or .quit to exit the terminal")
-    user_input = "123 - 5"
+    user_input = "print(((123 - 5) * k ) /2)"
 
     
     #while (not user_input.strip() == ".q") and (not user_input.strip() == ".quit"):
