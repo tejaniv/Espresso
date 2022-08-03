@@ -5,8 +5,10 @@ from parser import *
 
 def process_terminal(line):
     print(line)
-    lexer.tokenize(line)
+    
     # Create tokens
+    tokens = lexer.tokenize(line)
+    
     # Run them through parser
     # Evaluate
 
