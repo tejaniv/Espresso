@@ -18,7 +18,7 @@ def process_file(file):
 
 def run_terminal():
     print("Welcome to the Espresso Terminal! \nEnter .q or .quit to exit the terminal")
-    user_input = "print(((123 - 5) * k ) /2)"
+    user_input = "print(((123 - 5) * k ) /3)"
 
     
     #while (not user_input.strip() == ".q") and (not user_input.strip() == ".quit"):

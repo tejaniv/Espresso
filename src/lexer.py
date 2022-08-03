@@ -104,7 +104,7 @@ class Lexer:
                 elif type(temp_type) == Token_Types:
                     self.tokens.append(Token(temp_type, self.line[first_index:self.pos]))
 
-        print(self.tokens)    
+        print(self.tokens)     
 
     def find_type(self, temp_str):
         #print("temp_str: ", temp_str)
