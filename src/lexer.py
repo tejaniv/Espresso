@@ -1,5 +1,6 @@
 from parser import *
 from enum import Enum
+import re
 
 
 ##############################
@@ -15,14 +16,18 @@ class Token_Types(Enum):
     TT_COMMENT          = 6
 
 class Token:
-    def __init__(self, type, value = None) -> None:
+    def __init__(self, type, kind = None, value = None, line = 1) -> None:
         self.type = type
+        self.kind = kind
         self.value = value
-        self.line = 1
+        self.line = line
 
     def __repr__(self) -> str:
         if self.value:
-            return f"({self.type}: '{self.value}') "
+            if self.kind:
+                return f"({self.kind}: '{self.value}')"
+            else:
+                return f"({self.type}: '{self.value}')"
         return f"{self.type}"
 
 
@@ -41,7 +46,9 @@ class Lexer:
             '(': "LPAREN",
             ')': "RPAREN",
             '{': "LBRACE",
-            '}': "RBRACE"
+            '}': "RBRACE",
+            '[': "LSQUARE",
+            ']': "RSQUARE"
         }
         self.operators = {
             '+': "PLUS",
@@ -62,13 +69,14 @@ class Lexer:
 
         self.booleans = ["awake", "asleep"]
 
-    def tokenize(self, line):
+    def tokenize(self, line) -> list:
         self.pos = 0
         cur_char = ''
         temp_type = ''
         temp_kind = ''
         first_index = 0
         self.line = line
+        self.tokens = []
 
         while self.pos < len(line):
             print()
@@ -95,20 +103,21 @@ class Lexer:
                 print("indices:", first_index, "->", self.pos)
 
                 print("substring: ", self.line[first_index:self.pos])
-                
-                if temp_type == Token_Types.TT_IDENTIFIER:
-                    if self.line[self.pos-1] == ' ':
-                        self.tokens.append(Token(temp_type, self.line[first_index:self.pos-1]))
-                    else:
-                        self.tokens.append(Token(temp_type, self.line[first_index:self.pos]))
-                elif type(temp_type) == Token_Types:
-                    self.tokens.append(Token(temp_type, self.line[first_index:self.pos]))
 
-        print(self.tokens)
+                if temp_type == Token_Types.TT_IDENTIFIER:
+                    temp_type, temp_kind = self.find_type(self.line[first_index:self.pos])
+                elif temp_type == Token_Types.TT_LITERAL and temp_kind == "INT":
+                    print("HERE")
+                    temp_type, temp_kind = self.find_type(self.line[first_index:self.pos])
+                
+                if type(temp_type) == Token_Types:
+                    self.tokens.append(Token(temp_type, temp_kind, self.line[first_index:self.pos].strip()))
+
+        #print(self.tokens)
         return self.tokens
 
     def find_type(self, temp_str):
-        #print("temp_str: ", temp_str)
+        print("temp_str: ", temp_str)
         #print("is numeric: ",temp_str.isnumeric())
         #print("operator?: ", ('+' in self.operators))
 
@@ -118,7 +127,8 @@ class Lexer:
             return Token_Types.TT_SEPARATOR, self.separators[temp_str]
         elif temp_str in self.operators:
             return Token_Types.TT_OPERATOR, self.operators[temp_str]
-        elif (temp_str.isnumeric()) or (temp_str in self.booleans) or (self.isString(temp_str)):
+        elif (temp_str.isnumeric()) or (temp_str in self.booleans) or (self.isString(temp_str)) or (self.isFloat(temp_str)):
+            print("is literal")
             return Token_Types.TT_LITERAL, self.literal_type(temp_str) 
         else:
             return Token_Types.TT_IDENTIFIER, None
@@ -138,8 +148,33 @@ class Lexer:
                 cur_type, cur_kind = self.find_type(temp_str)
 
     def isString(self, str):
+        print("checking if string: ", str)
+        str_rex = r'(\'[a-zA-Z\d]+\')|(\"[a-zA-Z\d]+)\"'
+        return bool(re.search(str_rex, str))
+
+    def isFloat(self, str):
+        float_rex = r'(\d+)?\.(\d+)?'
+        print("FLOAT: " , str)
+
+        if bool(re.search(float_rex, str)):
+            return True
         return False
 
     def literal_type(self, str):
+        print("checking literals")
+        int_rex = r'^\d+$'
+        float_rex = r'^(\d+)?\.(\d+)?$'
+        
+        if bool(re.search(int_rex, str)):
+            print("is int")
+            return self.literals['int']
+        elif bool(re.search(float_rex, str)):
+            print("is float")
+            return self.literals['float']
+        elif str in self.booleans:
+            return self.literals['bool']
+        elif self.isString(str):
+            return self.literals['str']
         return None
+
         # Use regex to determine type

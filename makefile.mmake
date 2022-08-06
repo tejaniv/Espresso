@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 all:
 	pyinstaller --distpath . main.spec
-	mv main espresso
+	mv ./main ./espresso
 	
-	rm -r ./main.app ./build
+	rm -r ./build
