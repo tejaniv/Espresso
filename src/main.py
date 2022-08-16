@@ -7,10 +7,18 @@ def process_terminal(line):
     print(line)
 
     # Create tokens
-    tokens = lexer.tokenize(line)
+    lexer = Lexer()
+    tokens, error = lexer.tokenize(line)
+
     print(tokens)
-    
+    print()
+
     # Run them through parser
+    parser = Parser()
+    tree = parser.create_AST(tokens)
+    
+    print(tree)
+    
     # Evaluate
 
 def process_file(file):
@@ -21,20 +29,18 @@ def process_file(file):
 
 def run_terminal():
     print("Welcome to the Espresso Terminal! \nEnter .q or .quit to exit the terminal")
-    user_input = '2.3'
+    user_input = '1 * 2 + 4'
 
     
-    while (not user_input.strip() == ".q") and (not user_input.strip() == ".quit"):
-        user_input = input("Esp >> ")
-        process_terminal(user_input)
+    #while (not user_input.strip() == ".q") and (not user_input.strip() == ".quit"):
+    #    user_input = input("Esp >> ")
+    process_terminal(user_input)
     
 
 if __name__ == "__main__":
     # Use sys.argv[x] to take input. Could use for file input
     # sys.argv[0] will always be "./espresso" when running Espresso
     print("Welcome to Espresso")
-
-    lexer = Lexer()
 
     if len(sys.argv) == 1:
         run_terminal()
