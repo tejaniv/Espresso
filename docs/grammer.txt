@@ -1,3 +1,4 @@
 expr : term ((PLUS|MINUS) term)*    // An expression is made up of a term added or subtracted by another term
-term : factor ((MUL|DIV) factor)*   // A term is made up of a factor and an optional amount of mul/div by another factor
+term : exp ((MUL|DIV) exp)*         // A term is made up of an exp and an optional amount of mul/div followed by another exp
+exp : factor (EXPONENT factor)*     // An exp is made up of a factor followed by an optional number of exponent operators followed by another factor
 factor : INT | '(' expr ')'         // A factor is simply a number or an expression

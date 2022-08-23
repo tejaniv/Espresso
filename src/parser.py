@@ -62,14 +62,29 @@ class Parser:
             self.advance("RPAREN")
             return node
 
-
-    def parse_term(self):
+    def parse_exp(self):
         """
-        term : factor ((MUL|DIV) factor)*
+        exp : factor (EXPONENT factor)*
         factor : INT | LPAREN expr RPAREN
         """
 
-        node  = self.parse_factor()
+        node = self.parse_factor()
+
+        while self.current_token.kind == "EXPONENT":
+            token = self.current_token
+            self.advance("EXPONENT")
+            node = BinOp(left=node, op=token, right=self.parse_factor())
+            
+        return node
+
+    def parse_term(self):
+        """
+        term : exp ((MUL|DIV) exp)*
+        exp : factor (EXPONENT factor)*
+        factor : INT | LPAREN expr RPAREN
+        """
+
+        node  = self.parse_exp()
 
         while self.current_token.kind in ("MUL", "DIV"):
             token = self.current_token
@@ -79,14 +94,15 @@ class Parser:
             elif token.kind == "DIV":
                 self.advance("DIV")
 
-            node = BinOp(left=node, op=token, right=self.parse_factor())
+            node = BinOp(left=node, op=token, right=self.parse_exp())
         
         return node
 
     def parse_expr(self):
         """
         expr : term ((PLUS|MINUS) term)*
-        term : factor ((MUL|DIV) factor)*
+        term : exp ((MUL|DIV) exp)*
+        exp : factor (EXPONENT factor)*
         factor : INT | LPAREN expr RPAREN
         """
 

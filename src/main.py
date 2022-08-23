@@ -2,6 +2,7 @@ import sys
 
 from lexer import *
 from parser import *
+from interpreter import *
 
 def process_terminal(line):
     print(line)
@@ -10,6 +11,7 @@ def process_terminal(line):
     lexer = Lexer()
     tokens, error = lexer.tokenize(line)
 
+    print("vvv TOKENS vvv")
     print(tokens)
     print()
 
@@ -17,9 +19,17 @@ def process_terminal(line):
     parser = Parser()
     tree = parser.create_AST(tokens)
     
+    print("vvv TREE vvv")
     print(tree)
-    
+    print()
+
     # Evaluate
+    interpreter = Interpreter()
+    result = interpreter.interpret(tree)
+
+    print ("vvv INTERPRETER vvv")
+    print("Result: " , result)
+    print()
 
 def process_file(file):
     pass
@@ -30,11 +40,15 @@ def process_file(file):
 def run_terminal():
     print("Welcome to the Espresso Terminal! \nEnter .q or .quit to exit the terminal")
     user_input = '1 * 2 + 4'
-
+    run_terminal = True
     
-    #while (not user_input.strip() == ".q") and (not user_input.strip() == ".quit"):
-    #    user_input = input("Esp >> ")
-    process_terminal(user_input)
+    while run_terminal:
+        user_input = input("Esp >> ")
+        if (not user_input.strip() == ".q") and (not user_input.strip() == ".quit"):        
+            process_terminal(user_input)
+        else:
+            run_terminal = False
+        
     
 
 if __name__ == "__main__":

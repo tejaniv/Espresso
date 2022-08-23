@@ -16,6 +16,7 @@ class Token_Types(Enum):
     TT_COMMENT          = 7
     TT_EOF              = 8
 
+# Store information on each token in the statement passed in
 class Token:
     def __init__(self, type, kind = None, value = None, line = 1, col = 0) -> None:
         self.type = type
@@ -36,7 +37,8 @@ class Token:
 ##############################
 # LEXER
 ##############################
-        
+
+# Parse the string passed in and tokenize the string
 class Lexer:
     def __init__(self) -> None:
         self.tokens = []
@@ -57,7 +59,7 @@ class Lexer:
             '-': "MINUS",
             '*': "MUL",
             '/': "DIV",
-            '**': "EXPONENT",
+            '^': "EXPONENT",
             '=': "EQUAL"
         }
         self.literals = {
@@ -72,6 +74,11 @@ class Lexer:
         self.booleans = ["Awake", "Asleep"] #True/False
 
     def tokenize(self, line) -> list:
+        '''
+        Main function to tokenize the line.
+        Loops through the line and looks for unique tokens
+        '''
+        
         self.pos = 0
         cur_char = ''
         temp_type = ''
@@ -140,6 +147,8 @@ class Lexer:
          
 
     def find_end_of_type(self, type, kind):
+        '''Once a specific type is found, loop until we have found a new type or the end of the string'''
+
         #print("finding end for potential", type, "type")
         first = self.pos
         cur_type = type
@@ -153,6 +162,7 @@ class Lexer:
                 cur_type, cur_kind = self.find_type(temp_str)
 
     def isString(self, str):
+        '''Check if the string being tokenized is a string type'''
         #print("checking if string: ", str)
         str_rex = r'(\'[a-zA-Z\d]+\')|(\"[a-zA-Z\d]+)\"'
         return bool(re.search(str_rex, str))
