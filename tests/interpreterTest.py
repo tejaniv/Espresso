@@ -63,7 +63,34 @@ class InterpreterTest(unittest.TestCase):
         
         tree = BinOp(ast_l, tok_op, ast_r)
         
-        self.assertRaises(TypeError, i.interpret, tree)  
+        self.assertRaises(TypeError, i.interpret, tree) 
+
+    def test_int_declaration(self):
+        i = Interpreter()
+
+        tok_l = Token(type=Token_Types.TT_IDENTIFIER, kind="IDENTIFIER", value="x")
+        ast_l = IdentityOp(tok_l)
+
+        tok_op = Token(type=Token_Types.TT_OPERATOR, kind="DECLARE", value="=")
+
+        tok_r = Token(type=Token_Types.TT_LITERAL, kind="INT", value="3")
+        ast_r = Num(tok_r)
+
+        tree = BinOp(ast_l, tok_op, ast_r)
+        i.interpret(tree)
+
+        tok_l2 = Token(type=Token_Types.TT_IDENTIFIER, kind="IDENTIFIER", value="x")
+        ast_l2 = Num(tok_l2)
+
+        tok_op2 = Token(type=Token_Types.TT_OPERATOR, kind="PLUS", value="+")
+        
+        tok_r2 = Token(type=Token_Types.TT_LITERAL, kind="INT", value="2")
+        ast_r2 = Num(tok_r2)
+        
+        tree2 = BinOp(ast_l2, tok_op2, ast_r2) 
+        result = i.interpret(tree2)
+
+        self.assertEquals(result, 5.0)
 
 if __name__ == "__main__":
     unittest.main()
