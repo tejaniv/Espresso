@@ -1,3 +1,6 @@
+import sys
+sys.path.append("../../Espresso")
+
 from enum import Enum
 import re
 
@@ -18,7 +21,7 @@ class Token_Types(Enum):
 
 # Store information on each token in the statement passed in
 class Token:
-    def __init__(self, type, kind = None, value = None, line = 1, col = 0) -> None:
+    def __init__(self, type : Token_Types, kind : str = None, value : str = None, line = 1, col = 0) -> None:
         self.type = type
         self.kind = kind
         self.value = value
@@ -33,6 +36,9 @@ class Token:
                 return f"({self.type}: '{self.value}')"
         return f"{self.type}"
 
+    def __eq__(self, other: object) -> bool:
+        return self.type == other.type and self.kind == other.kind and self.value == other.value
+                 
 
 ##############################
 # LEXER
@@ -42,7 +48,7 @@ class Token:
 class Lexer:
     def __init__(self) -> None:
         self.tokens = []
-        
+
         self.keywords = {
             'print': "PRINT"
         }
@@ -60,7 +66,10 @@ class Lexer:
             '*': "MUL",
             '/': "DIV",
             '^': "EXPONENT",
-            '=': "EQUAL"
+            '=': "DECLARE",
+            '==': "EQUALITY", 
+            '%': "MOD",
+            '//': "FLOOR"
         }
         self.literals = {
             'int': "INT",
@@ -71,7 +80,7 @@ class Lexer:
             'char': "CHARACTER"
         }
 
-        self.booleans = ["Awake", "Asleep"] #True/False
+        self.booleans = ["Asleep", "Awake"] # False/True
 
     def tokenize(self, line) -> list:
         '''
@@ -108,6 +117,10 @@ class Lexer:
 
                 if temp_type in (Token_Types.TT_IDENTIFIER, Token_Types.TT_KEYWORD, Token_Types.TT_LITERAL):
                     self.find_end_of_type(temp_type, temp_kind)
+                elif temp_type == Token_Types.TT_OPERATOR:
+                    i = self.pos
+                    self.find_end_of_type(temp_type, temp_kind)
+                    _ ,temp_kind = self.find_type(self.line[i:self.pos])
                 else:
                     self.pos += 1
 
@@ -129,6 +142,10 @@ class Lexer:
         return self.tokens, self.Error_Code
 
     def find_type(self, temp_str):
+        '''
+        Takes in a string and determines which type of token the string should be. 
+        A number, for example, is taken and converted into a 'Literal' token type and so on.
+        '''
         #print("temp_str: ", temp_str)
         #print("is numeric: ",temp_str.isnumeric())
         #print("operator?: ", ('+' in self.operators))
@@ -143,8 +160,15 @@ class Lexer:
             #print("is literal")
             return Token_Types.TT_LITERAL, self.literal_type(temp_str) 
         else:
-            return Token_Types.TT_IDENTIFIER, None
+            self.check_identifier(temp_str)
+            return Token_Types.TT_IDENTIFIER, "IDENTIFIER"
          
+
+    def check_identifier(self, str):
+        '''verify that the identifier is only comprised of characters and underscores'''
+        str_rex = r'[a-zA-Z_\d\ ]+'
+        if not bool(re.search(str_rex, str)):
+            raise SyntaxError("Invalid syntax")
 
     def find_end_of_type(self, type, kind):
         '''Once a specific type is found, loop until we have found a new type or the end of the string'''
@@ -160,6 +184,7 @@ class Lexer:
             if self.pos < len(self.line):
                 temp_str = self.line[self.pos]
                 cur_type, cur_kind = self.find_type(temp_str)
+            #print(type, cur_type)
 
     def isString(self, str):
         '''Check if the string being tokenized is a string type'''
@@ -178,7 +203,7 @@ class Lexer:
     def literal_type(self, str):
         #print("checking literals")
         int_rex = r'^\d+$'
-        float_rex = r'^(\d+)?\.(\d+)?$'
+        float_rex = r'^(\d+)?\.(\d+)$'
         
         if bool(re.search(int_rex, str)):
             #print("is int")

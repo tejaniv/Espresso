@@ -1,3 +1,6 @@
+import sys
+sys.path.append("../../Espresso")
+
 from lexer import *
 
 ##############################
@@ -8,20 +11,28 @@ class AST:
         pass
 
 class BinOp(AST):
-    def __init__(self, left:Token, op:Token, right:Token) -> None:
-        self.left = left
+    def __init__(self, left:AST, op:Token, right:AST) -> None:
+        self.left = left 
         self.token = op
         self.op = op.value
         self.right = right
     
     def __repr__(self) -> str:
-        return f"{self.left} \n{self.op} \n  {self.right}"
+        return f"({self.left} {self.op} {self.right})"
 
 class Num(AST):
     def __init__(self, token : Token) -> None:
         self.token = token
         self.value = token.value
     
+    def __repr__(self) -> str:
+        return f"{self.value}"
+
+class IdentityOp(AST):
+    def __init__(self, token : Token) -> None:
+        self.token = token
+        self.value = token.value
+
     def __repr__(self) -> str:
         return f"{self.value}"
 
@@ -33,15 +44,17 @@ class Parser:
         pass
 
     def create_AST(self, token_list) -> AST:
+        self.token_list = token_list
         self.tokens = iter(token_list)
-        self.current_token = self.get_next_token()
+
+        self.current_token = self.get_next_token
         print("cur_tok: ", self.current_token)
 
-        return self.parse_expr()
+        return self.parse_declare()
 
     def advance(self, cur_kind):
         if self.current_token.kind == cur_kind:
-            self.current_token = self.get_next_token()
+            self.current_token = self.get_next_token
             print("cur_tok: ", self.current_token)
         else:
             raise Exception('Invalid Syntax')
@@ -53,9 +66,19 @@ class Parser:
         """
 
         token = self.current_token
+        print("tok kind:" , token.type)
         if token.kind == "INT":
             self.advance("INT")
             return Num(token)
+
+        elif token.kind == "FLOAT":
+            self.advance("FLOAT")
+            return Num(token)
+
+        elif token.type == Token_Types.TT_IDENTIFIER:
+            self.advance("IDENTIFIER")
+            return Num(token)
+
         elif token.kind == "LPAREN":
             self.advance("LPAREN")
             node = self.parse_expr()
@@ -86,13 +109,17 @@ class Parser:
 
         node  = self.parse_exp()
 
-        while self.current_token.kind in ("MUL", "DIV"):
+        while self.current_token.kind in ("MUL", "DIV", "MOD", "FLOOR"):
             token = self.current_token
 
             if token.kind == "MUL":
                 self.advance("MUL")
             elif token.kind == "DIV":
                 self.advance("DIV")
+            elif token.kind == "MOD":
+                self.advance("MOD")
+            elif token.kind == "FLOOR":
+                self.advance("FLOOR")
 
             node = BinOp(left=node, op=token, right=self.parse_exp())
         
@@ -110,6 +137,7 @@ class Parser:
 
         while self.current_token.kind in ("PLUS", "MINUS"):
             token = self.current_token
+            print("tok: ", token)
 
             if token.kind == "PLUS":
                 self.advance("PLUS")
@@ -120,5 +148,67 @@ class Parser:
 
         return node
 
+    def parse_equality(self):
+        '''
+        equal : expr (EQUALITY expr)*
+        expr : term ((PLUS|MINUS) term)*
+        term : exp ((MUL|DIV) exp)*
+        exp : factor (EXPONENT factor)*
+        factor : INT | LPAREN expr RPAREN
+        '''
+        
+        node = self.parse_expr()
+
+        while self.current_token.kind == "EQUALITY":
+            token = self.current_token
+
+            self.advance("EQUALITY")
+            node = BinOp(left = node, op=token, right=self.parse_expr())
+
+        return node
+    
+    def parse_identifier(self):
+        
+        node = None
+        
+        print("cur tok:" , self.current_token)
+        if self.current_token.type is Token_Types.TT_IDENTIFIER:
+            
+            node = IdentityOp(self.current_token)
+            self.current_token = self.get_next_token
+
+        return node    
+
+    def parse_declare(self):
+        '''
+        dec : (name DECLARE)? equal
+        name : STRING
+        STRING : /\w+/ || IDENTIFIER
+        '''
+
+        node = self.parse_identifier()
+
+        if self.current_token.kind == "DECLARE":
+            token = self.current_token
+
+            self.advance("DECLARE")    
+            node = BinOp(left=node, op=token, right=self.parse_equality())
+            
+            return node
+        else:
+            self.reset_token_gen()
+            return self.parse_equality()
+
+    @property
     def get_next_token(self):
         return next(self.tokens)
+
+    def reset_token_gen(self):
+        '''
+        Since the parse_... functions are irreversible, we need a way to be able to parse the
+        tokens is there is a variable present but not a declaration statement. To achieve this, we need
+        to reset the iterator
+        '''
+        print("We have reset")
+        self.tokens = iter(self.token_list)
+        self.current_token = self.get_next_token

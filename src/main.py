@@ -1,4 +1,6 @@
 import sys
+sys.path.append("../../Espresso")
+
 
 from lexer import *
 from parser import *
@@ -8,26 +10,24 @@ def process_terminal(line):
     print(line)
 
     # Create tokens
-    lexer = Lexer()
-    tokens, error = lexer.tokenize(line)
 
     print("vvv TOKENS vvv")
+    tokens, error = lexer.tokenize(line)
     print(tokens)
     print()
 
     # Run them through parser
-    parser = Parser()
-    tree = parser.create_AST(tokens)
     
     print("vvv TREE vvv")
+    tree = parser.create_AST(tokens)
     print(tree)
     print()
 
     # Evaluate
-    interpreter = Interpreter()
-    result = interpreter.interpret(tree)
 
     print ("vvv INTERPRETER vvv")
+    result = interpreter.interpret(tree)
+    print(interpreter.assignments)
     print("Result: " , result)
     print()
 
@@ -39,12 +39,14 @@ def process_file(file):
 
 def run_terminal():
     print("Welcome to the Espresso Terminal! \nEnter .q or .quit to exit the terminal")
-    user_input = '1 * 2 + 4'
+    user_input = 'x := 2'
     run_terminal = True
     
     while run_terminal:
         user_input = input("Esp >> ")
-        if (not user_input.strip() == ".q") and (not user_input.strip() == ".quit"):        
+        if user_input == '':
+            continue
+        elif (not user_input.strip() == ".q") and (not user_input.strip() == ".quit"):        
             process_terminal(user_input)
         else:
             run_terminal = False
@@ -56,6 +58,10 @@ if __name__ == "__main__":
     # sys.argv[0] will always be "./espresso" when running Espresso
     print("Welcome to Espresso")
 
+    lexer = Lexer()
+    parser = Parser()
+    interpreter = Interpreter()
+    
     if len(sys.argv) == 1:
         run_terminal()
     #elif len(sys.argv) == 2:
