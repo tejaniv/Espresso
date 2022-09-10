@@ -77,7 +77,9 @@ class Lexer:
             '<': "LESSTHAN",
             '<=': "LESSEQUAL",
             '>': "GREATERTHAN",
-            '>=': "GREATEREQUAL"
+            '>=': "GREATEREQUAL",
+            '&': "AND",
+            '~': "OR"
         }
         self.literals = {
             'int': "INT",

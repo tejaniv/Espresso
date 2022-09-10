@@ -37,17 +37,22 @@ class IdentityOp(AST):
         return f"{self.value}"
 
 class FunctionCall(AST):
-    def __init__(self, token : Token, parameters : list) -> None:
+    def __init__(self, token : Token, parameters : AST) -> None:
         self.token = token
         self.value = token.value
         self.parameters = parameters
 
     def __repr__(self):
-        parameter_str = ""
-        for p in self.parameters:
-            parameter_str += f"{p.value} "
-            
-        return f"{self.value} ( {parameter_str})"
+        return f"{self.value} ({self.parameters})"
+
+class ParametersNode(AST):
+    def __init__(self, node : AST, next : AST) -> None:
+        self.node = node
+        self.next = next
+        self.value = node
+    
+    def __repr__(self) -> str:
+        return f"{self.node} | {self.next}" if self.next is not None else f"{self.node}"
 
 
 ##############################
@@ -198,6 +203,22 @@ class Parser:
             node = BinOp(left = node, op=token, right=self.parse_expr())
 
         return node
+
+    def parse_logical(self):
+        node = self.parse_equality()
+
+        while self.current_token in ("AND", "OR"):
+            token = self.current_token
+
+            if token.kind == "OR":
+                self.advance("OR")
+
+            elif token.kind == "AND":
+                self.advance("AND")
+            
+            node = BinOp(left = node, token = token, right = self.parse_equality())
+        
+        return node
     
     def parse_identifier(self):
         
@@ -224,38 +245,39 @@ class Parser:
             token = self.current_token
 
             self.advance("DECLARE")    
-            node = BinOp(left=node, op=token, right=self.parse_equality())
+            node = BinOp(left=node, op=token, right=self.parse_logical())
             
             return node
         else:
             self.reset_token_gen()
-            return self.parse_equality()
+            return self.parse_logical()
 
     def process_parameters(self):
         '''
-        parameters : (equal (\| equal)*)
+        parameters : (equality (PIPE equality)*)
         '''
-
-        # node = self.parse_equality()
-
-        # while self.current_token.type == Token_Types.TT_SEPARATOR and self.current_token.kind == "PIPE":
-        #     token = self.current_token
-
-        #     self.advance("PIPE")
-
-        # node = self.parse_equality()
-
-        pars = []
 
         self.advance("LPAREN")
         node = self.parse_parameter()
         self.advance("RPAREN")
 
-        pars.append(node)
-        return pars
+        print("type:" ,type(node))
+        return node
 
-    def parse_parameter(self):
-        return
+    def parse_parameter(self) -> ParametersNode:
+        node = self.parse_logical()
+        print("should be 1: ", node)
+
+        while self.current_token.type == Token_Types.TT_SEPARATOR and self.current_token.kind == "PIPE":
+            self.advance("PIPE")
+            print("found pipe")
+            node = ParametersNode(node, self.parse_parameter())
+
+        if type(node) == ParametersNode:
+            return node
+        elif isinstance(node, AST):
+            print("here")
+            return ParametersNode(node, None)
         
     @property
     def get_next_token(self):
@@ -263,7 +285,7 @@ class Parser:
 
     def reset_token_gen(self):
         '''
-        Since the parse_... functions are irreversible, we need a way to be able to parse the
+        Since the parse_<name> functions are irreversible, we need a way to be able to parse the
         tokens is there is a variable present but not a declaration statement. To achieve this, we need
         to reset the iterator
         '''

@@ -27,7 +27,7 @@ def process_terminal(line):
 
     print ("vvv INTERPRETER vvv")
     result = interpreter.interpret(tree)
-    print(interpreter.assignments)
+    print("variable assignments: ", interpreter.assignments)
     print("Result: " , result)
     print()
 

@@ -1,4 +1,3 @@
-from platform import node
 import sys
 sys.path.append("../../Espresso")
 
@@ -46,7 +45,7 @@ class Interpreter:
         return self.visit_node(tree)
         
     def visit_node(self, node):
-        print("node:", node)
+        print("visiting node:", node)
         if type(node) ==  BinOp:
             return self.eval_BinOp(node)
         elif type(node) == Num:
@@ -122,13 +121,18 @@ class Interpreter:
             print("builtin function")
             f = self.builtin_functions[func_name]
             parameters = self.process_parameters(node.parameters)
-            f(parameters)
+            
+            return_value = f(parameters)
 
-    def process_parameters(self, nodes : list) -> list:
+            if return_value is not None:
+                print(return_value)
+
+    def process_parameters(self, paraNode : ParametersNode) -> list:
         parameters = []
+        while paraNode is not None:
+            node = paraNode.node
+            parameters.append(self.visit_node(node))
+            paraNode = paraNode.next        
 
-        for p in nodes:
-            parameters.append(self.visit_node(p))
-
-        print(parameters)
+        print("parameters:", parameters)
         return parameters
