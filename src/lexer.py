@@ -50,7 +50,8 @@ class Lexer:
         self.tokens = []
 
         self.keywords = {
-            'print': "PRINT"
+            'if': "IF",
+            'else': "ELSE"
         }
         self.separators = {
             '(': "LPAREN",
@@ -58,7 +59,10 @@ class Lexer:
             '{': "LBRACE",
             '}': "RBRACE",
             '[': "LSQUARE",
-            ']': "RSQUARE"
+            ']': "RSQUARE",
+            ';': "SEMICOLON",
+            ',': "COMMA",
+            '|': "PIPE"
         }
         self.operators = {
             '+': "PLUS",
@@ -66,10 +70,14 @@ class Lexer:
             '*': "MUL",
             '/': "DIV",
             '^': "EXPONENT",
-            '=': "DECLARE",
-            '==': "EQUALITY", 
+            '=': "DECLARE", 
             '%': "MOD",
-            '//': "FLOOR"
+            '//': "FLOOR",
+            '==': "EQUALITY",
+            '<': "LESSTHAN",
+            '<=': "LESSEQUAL",
+            '>': "GREATERTHAN",
+            '>=': "GREATEREQUAL"
         }
         self.literals = {
             'int': "INT",

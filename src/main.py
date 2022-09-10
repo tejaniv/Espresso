@@ -32,14 +32,19 @@ def process_terminal(line):
     print()
 
 def process_file(file):
-    pass
+    f = open(file, 'r')
+    for line in f:
     # create tokens
+        tokens, error = lexer.tokenize(line.strip())
     # run through parser
+        tree = parser.create_AST(tokens)
     # evaluate
+        result = interpreter.interpret(tree)
+        print(interpreter.assignments)
 
 def run_terminal():
     print("Welcome to the Espresso Terminal! \nEnter .q or .quit to exit the terminal")
-    user_input = 'x := 2'
+    user_input = ''
     run_terminal = True
     
     while run_terminal:
@@ -64,5 +69,5 @@ if __name__ == "__main__":
     
     if len(sys.argv) == 1:
         run_terminal()
-    #elif len(sys.argv) == 2:
-    #    process_file(sys.argv[1])
+    elif len(sys.argv) == 2:
+        process_file(sys.argv[1])

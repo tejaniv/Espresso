@@ -36,6 +36,20 @@ class IdentityOp(AST):
     def __repr__(self) -> str:
         return f"{self.value}"
 
+class FunctionCall(AST):
+    def __init__(self, token : Token, parameters : list) -> None:
+        self.token = token
+        self.value = token.value
+        self.parameters = parameters
+
+    def __repr__(self):
+        parameter_str = ""
+        for p in self.parameters:
+            parameter_str += f"{p.value} "
+            
+        return f"{self.value} ( {parameter_str})"
+
+
 ##############################
 # Parser
 ##############################
@@ -77,6 +91,10 @@ class Parser:
 
         elif token.type == Token_Types.TT_IDENTIFIER:
             self.advance("IDENTIFIER")
+            
+            if self.current_token.kind == "LPAREN":
+                return FunctionCall(token=token, parameters=self.process_parameters())
+
             return Num(token)
 
         elif token.kind == "LPAREN":
@@ -159,10 +177,24 @@ class Parser:
         
         node = self.parse_expr()
 
-        while self.current_token.kind == "EQUALITY":
+        while self.current_token.kind in ("EQUALITY", "LESSTHAN", "LESSEQUAL", "GREATERTHAN", "GREATEREQUAL"):
             token = self.current_token
 
-            self.advance("EQUALITY")
+            if token.kind == "EQUALITY":
+                self.advance("EQUALITY")
+
+            elif token.kind == "LESSTHAN":
+                self.advance("LESSTHAN")
+            
+            elif token.kind == "LESSEQUAL":
+                self.advance("LESSEQUAL")
+
+            elif token.kind == "GREATERTHAN":
+                self.advance("GREATERTHAN")
+
+            elif token.kind == "GREATEREQUAL":
+                self.advance("GREATEREQUAL")
+
             node = BinOp(left = node, op=token, right=self.parse_expr())
 
         return node
@@ -199,6 +231,32 @@ class Parser:
             self.reset_token_gen()
             return self.parse_equality()
 
+    def process_parameters(self):
+        '''
+        parameters : (equal (\| equal)*)
+        '''
+
+        # node = self.parse_equality()
+
+        # while self.current_token.type == Token_Types.TT_SEPARATOR and self.current_token.kind == "PIPE":
+        #     token = self.current_token
+
+        #     self.advance("PIPE")
+
+        # node = self.parse_equality()
+
+        pars = []
+
+        self.advance("LPAREN")
+        node = self.parse_parameter()
+        self.advance("RPAREN")
+
+        pars.append(node)
+        return pars
+
+    def parse_parameter(self):
+        return
+        
     @property
     def get_next_token(self):
         return next(self.tokens)
